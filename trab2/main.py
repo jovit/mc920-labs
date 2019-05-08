@@ -35,6 +35,10 @@ bayer_ordered_dithering = np.array([
     [10., 6., 9., 5.],
 ]).astype(float)
 
+bayer_second_order = np.array([
+    [0., 2.],
+    [3., 1.]
+])
 
 def normalize_to_interval(gmin, gmax, image):
     fmax = np.amax(image)
@@ -44,18 +48,23 @@ def normalize_to_interval(gmin, gmax, image):
 
     return normalized
 
-
 def apply_ordered_dithering(image, pattern):
     pattern_size = len(pattern)
+    image_height = len(image)
+    image_width = len(image[0])
+
     normalized = normalize_to_interval(0., 9., image)
+    result = np.zeros((image_height * pattern_size, image_width * pattern_size))
 
     for i, line in enumerate(normalized):
         for j, pixel in enumerate(line):
-            if pixel > pattern[i % pattern_size, j % pattern_size]:
-                normalized[i, j] = 9
-            else:
-                normalized[i, j] = 0
-    return normalize_to_interval(0, 255, normalized)
+            for y, l_pattern in enumerate(pattern):
+                for x, value_pattern in enumerate(l_pattern):
+                    if pixel > value_pattern:
+                        result[y + i * pattern_size, x + j * pattern_size] = 9
+                    else:
+                        result[y + i * pattern_size, x + j * pattern_size] = 0
+    return normalize_to_interval(0, 255, result)
 
 # left to right pattern
 
@@ -84,7 +93,6 @@ def apply_dithering_with_error_diffusion(image):
     return image_copy
 
 # alternating pattern
-
 
 def apply_alternating_dithering_with_error_diffusion(image):
     image_height = len(image)
@@ -123,6 +131,14 @@ def apply_alternating_dithering_with_error_diffusion(image):
 # %%
 dithered_image = apply_ordered_dithering(image, bayer_ordered_dithering)
 cv2.imwrite(out_file + "_bayer.pbm", dithered_image)
+
+# %%
+dithered_image = apply_ordered_dithering(image, ordered_dithering)
+cv2.imwrite(out_file + "_3x3.pbm", dithered_image)
+
+# %%
+dithered_image = apply_ordered_dithering(image, bayer_second_order)
+cv2.imwrite(out_file + "_2x2.pbm", dithered_image)
 
 # %%
 error_diffusion = apply_dithering_with_error_diffusion(image)
