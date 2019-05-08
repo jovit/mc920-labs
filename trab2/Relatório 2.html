@@ -13055,12 +13055,8 @@ ul.typeahead-list  > li > a.pull-right {
 
 .ansi-bold { font-weight: bold; }
 
-.wrapper {
-  display: flex;
-  justify-content: space-around;
-  text-align: center;
-}
     </style>
+
 
 <style type="text/css">
 /* Overrides of notebook CSS for static HTML export */
@@ -13118,23 +13114,7 @@ div#notebook {
     <div class="container" id="notebook-container">
 
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%html</span>
-<span class="p">&lt;</span><span class="nt">style</span><span class="p">&gt;</span>
-    <span class="p">.</span><span class="nc">wrapper</span> <span class="p">{</span>
-        <span class="k">display</span><span class="p">:</span> <span class="kc">flex</span><span class="p">;</span>
-        <span class="k">justify-content</span><span class="p">:</span> <span class="kc">space-around</span><span class="p">;</span>
-        <span class="k">text-align</span><span class="p">:</span> <span class="kc">center</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">&lt;/</span><span class="nt">style</span><span class="p">&gt;</span>
-</pre></div>
 
-    </div>
-</div>
-</div>
 
 <div class="output_wrapper">
 <div class="output">
@@ -13152,6 +13132,7 @@ div#notebook {
         display: flex;
         justify-content: space-around;
         text-align: center;
+        width: 100%;
     }
 </style>
 
@@ -13318,56 +13299,30 @@ $$ (image-f_{min}) * \frac{g_{max}-g_{min}}{f_{max}-f_{min}} - g_{min} $$</p>
 <h3 id="Floyd-Steinberg-(pontilhado-com-difus&#227;o-de-erro)">Floyd-Steinberg (pontilhado com difus&#227;o de erro)<a class="anchor-link" href="#Floyd-Steinberg-(pontilhado-com-difus&#227;o-de-erro)">&#182;</a></h3><p>Para esse método, percorremos cada pixel da imagem, se o valor for maior que 128, substituímos ele por 255 e se for menor por 0. Para cada pixel salvamos o erro (valor original - valor novo) e distribuímos de acordo com a máscara defina anteriormente. 
 Esse método é aplicado tanto da esquerda para a direita, linha por linha e em zig zag, é esperado que o resultado de zig zag produza um resultado melhor (com menos artefatos).</p>
 <h2 id="Resultados-e-discuss&#227;o">Resultados e discuss&#227;o<a class="anchor-link" href="#Resultados-e-discuss&#227;o">&#182;</a></h2><p>Para os casos das imagens resultantes dos métodos de pontilhado ordenado, se observou um resultado melhor para a máscara 4x4, como esperado, as outras imagens observou-se mais artefatos e um contraste pior no caso do padrão 2x2, apesar de que as cores da imagem 3x3 ficaram mais próximas da original, porém com artefatos mais evidentes (padrões quadriculados).</p>
+
+</div>
+</div>
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <div class="wrapper">
 <div>
-<b>Imagem com padrão 2x2<b>
+<b>Imagem com padrão 2x2</b>
 
 <img src="baboon_2x2.jpg" width=200 >
 </div><div>
-<b>Imagem com padrão 3x3<b>
+<b>Imagem com padrão 3x3</b>
 
 <img src="baboon_3x3.jpg" width=200 >
 </div><div>
-<b>Imagem com padrão 4x4<b>
+<b>Imagem com padrão 4x4</b>
 
 <img src="baboon_bayer.jpg" width=200 >
 </div><div>
-<b>Imagem original<b>
+<b>Imagem original</b>
 
 <img src="baboon.jpg" width=200 >
-</div><p>&lt;/div&gt;</p>
-<p>Uma desvantagem clara dos padrões maiores é a imagem de output maior e também a maior complexidade na execução, pois a complixidade do algoritmo é</p>
-$$ O(I^2 P^2) $$<p>Onde I é a dimensão da imagem e P é a dimensão do padrão.</p>
-<p>Nos casos dos resultados com pontilhado com difusão de erro, as imagens resultantes tem a mesma dimensão que a original, e outra clara vantagem é a complexidade do algorítmo, que é apenas a dimensão da imagem (número de pixels), já que é feito o calculo uma vez para cada pixel, isso é possível de observar em tempo de execução de cada método, onde o de pontilhado ordenado demora considerávelmente mais, principalmente para o padrão 4x4. Esse método é uma boa alternativa, executando relativamente rápido e produzindo resultados bons</p>
-<p>No caso de imagens complexas como o baboon, não é possível observer grandes diferenças entre aplicar o método da esquerda para a direita ou em zig zag:
-Apenas alguns artefatos, como linhas verticais no cado do esquerda para a direita e linhas horizontais no caso do zig zag.</p>
-<p>Comparativamente com o método do pontilhado ordenado, é possível observar mais artefatos que os padrões 3x3 e 4x4, mas bons resultados em relação a detalhes e contraste da imagen resultante, principalmente considerando que a imagem final tem mesmo tamanho que a original.</p>
-<div class="wrapper">
-<div>
-<b>Floyd-Steinberg da esquerda para a direita<b>
-
-<img src="baboon_floyd.jpg" width=200 >
-</div><div>
-<b>Floyd-Steinberg em zig zag<b>
-
-<img src="baboon_floyd_alternating.jpg" width=200 >
-</div><p>&lt;/div&gt;</p>
-<p>É possível observar uma diferença maior nos resultados de aplicar o pontilhado com difusão de erro da esquerda para a direita e em zig zag na imagem sonnet, que possui regiões brancas grandes.
-Nela as regiões brancas em que foi aplicada o método da esquerda para a direita apresentou linhas horizontais, na zig zag as regiões brancas ficaram limpas.</p>
-<div class="wrapper">
-<div>
-<b>Floyd-Steinberg da esquerda para a direita<b>
-
-<img src="sonnet_floyd.jpg" width=200 >
-</div><div>
-<b>Floyd-Steinberg em zig zag<b>
-
-<img src="sonnet_floyd_alternating.jpg" width=200 >
-</div><div>
-<b>Imagem original<b>
-
-<img src="sonnet.jpg" width=200 >
-</div><p>&lt;/div&gt;</p>
+</div>
 
 </div>
 </div>
@@ -13375,13 +13330,72 @@ Nela as regiões brancas em que foi aplicada o método da esquerda para a direit
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Conclus&#227;o">Conclus&#227;o<a class="anchor-link" href="#Conclus&#227;o">&#182;</a></h2><p>lalalalala</p>
+<p>Uma desvantagem clara dos padrões maiores é a imagem de output maior e também a maior complexidade na execução, pois a complixidade do algoritmo é</p>
+$$ O(I^2 P^2) $$<p>Onde I é a dimensão da imagem e P é a dimensão do padrão.</p>
+<p>Nos casos dos resultados com pontilhado com difusão de erro, as imagens resultantes tem a mesma dimensão que a original, e outra clara vantagem é a complexidade do algorítmo, que é apenas a dimensão da imagem (número de pixels), já que é feito o calculo uma vez para cada pixel, isso é possível de observar em tempo de execução de cada método, onde o de pontilhado ordenado demora considerávelmente mais, principalmente para o padrão 4x4. Esse método é uma boa alternativa, executando relativamente rápido e produzindo resultados bons</p>
+<p>No caso de imagens complexas como o baboon, não é possível observer grandes diferenças entre aplicar o método da esquerda para a direita ou em zig zag:
+Apenas alguns artefatos, como linhas verticais no cado do esquerda para a direita e linhas horizontais no caso do zig zag.</p>
+<p>Comparativamente com o método do pontilhado ordenado, é possível observar mais artefatos que os padrões 3x3 e 4x4, mas bons resultados em relação a detalhes e contraste da imagen resultante, principalmente considerando que a imagem final tem mesmo tamanho que a original.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="wrapper">
+<div style="display: flex; flex-direction: column; align-items: center">
+<b>Floyd-Steinberg da esquerda para a direita</b>
+<img src="baboon_floyd.jpg" width=200 >
+</div>
+<div style="display: flex; flex-direction: column; justify-content: center">
+  <b>Floyd-Steinberg em zig zag</b>
+<img src="baboon_floyd_alternating.jpg" width=200 >
+</div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>É possível observar uma diferença maior nos resultados de aplicar o pontilhado com difusão de erro da esquerda para a direita e em zig zag na imagem sonnet, que possui regiões brancas grandes.
+Nela as regiões brancas em que foi aplicada o método da esquerda para a direita apresentou linhas horizontais, na zig zag as regiões brancas ficaram limpas.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="wrapper">
+<div style="display: flex; flex-direction: column; align-items: center">
+<b>Floyd-Steinberg da esquerda para a direita</b>
+
+<img src="sonnet_floyd.jpg" width=200 >
+</div><div style="display: flex; flex-direction: column; align-items: center">
+
+<b>Floyd-Steinberg em zig zag</b>
+
+<img src="sonnet_floyd_alternating.jpg" width=200 >
+</div><div style="display: flex; flex-direction: column; align-items: center">
+<b>Imagem original</b>
+
+<img src="sonnet.jpg" width=200 >
+</div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclus&#227;o">Conclus&#227;o<a class="anchor-link" href="#Conclus&#227;o">&#182;</a></h2><p>Pudemos observar a diferença entre os diferentes métodos de pontilhado tanto em questões de resultado quanto em questões de performance. Notou-se melhores resultados para os pontilhados ordenados 3x3 e 4x4, mas uma performance bem pior. Enquanto comparando as ordens de aplicação do pontilhado de difusão de erro, a aplicação em zig zag teve um resultado melhor para regiões brancas ou homogêneas da imagem, quando comparado com a aplicação da esquerda para a direita.</p>
 
 </div>
 </div>
 </div>
     </div>
   </div>
+</div>
+</div>
+
 </body>
 
  
