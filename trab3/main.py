@@ -128,14 +128,16 @@ def relation_between_transitions(image, box):
                     horizontal_transitions += 1
     return (horizontal_transitions/total, vertical_transitions/total)
 
-
-
-
-
-
-
 original_image = invert(image).astype(int)
+text_boxes = []
 
 for box in bounding_boxes:
-    print(relation_between_black_and_white(original_image, box))
-    print(relation_between_transitions(original_image, box))
+    black_and_white = relation_between_black_and_white(original_image, box)
+    transitions = relation_between_transitions(original_image, box)
+
+    if black_and_white < 0.5 and black_and_white > 0.2 and transitions[0] > 0.03 and transitions[0] < 0.1 and transitions[1] > 0.03 and transitions[1] < 0.1:
+        text_boxes.append(box)
+
+image_with_text_boxes = draw_boxes(invert(image).astype(int), text_boxes)
+cv2.imwrite("step9.pbm", image_with_text_boxes)
+
