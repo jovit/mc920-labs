@@ -187,7 +187,7 @@ def separate_words(image, box):
     cv2.imwrite("temp.pbm", invert(union).astype(int))
 
     f = open("./out2.txt", "w")
-    subprocess.call(["./comp_conexos", "temp.pbm", "temp2.pbm"], stdout=f)
+    subprocess.call(["./comp_conexos", "temp.pbm", "temp.pbm"], stdout=f)
     f.close()
     f = open("./out2.txt", "r")
     output = f.read()
@@ -221,6 +221,7 @@ for box in text_boxes:
         word_boxes.append(b)
 
 print("Number of words:", len(word_boxes))
-cv2.imwrite("bla.pbm", invert(image).astype(int))
+print("Number of text blocks:", len(text_boxes))
+
 image_with_word_boxes = draw_boxes(invert(image).astype(int), word_boxes)
 cv2.imwrite("step10.pbm", image_with_word_boxes)
