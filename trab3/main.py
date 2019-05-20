@@ -163,7 +163,7 @@ def separate_words(image, box):
     cropped = image[top_left[1]:bottom_right[1] +
                     1, top_left[0]:bottom_right[0] + 1]
 
-    selem_1x100 = np.ones((5, 10))
+    selem_1x100 = np.ones((6, 10))
     selem_200x1 = np.ones((10, 5))
 
 

@@ -10,5 +10,5 @@ Number of connected components: 5
 341,36
 353,0
 383,31
-0,5
+0,3
 34,32
