@@ -28,9 +28,6 @@ image = image.astype(np.bool_)
 
 image = invert(image)
 
-io.imshow(image.astype(int), cmap="gray")
-plt.show()
-
 # %% Step 1 - dilation
 selem_1x100 = np.ones((1, 100))
 
@@ -209,18 +206,9 @@ def separate_words(image, box):
     relative_boxes = []
     for b in word_bounding_boxes:
         b[0, 0] += top_left[0]
-        b[0, 0] = min(b[0, 0], len(image[0]) - 2)
-        
         b[0, 1] += top_left[1] 
-        b[0, 1] = min(b[0, 1], len(image) - 2)
-
-
-        b[1, 0] += top_left[0] 
-        b[1, 0] = min(b[1, 0], len(image[0]) - 2)
-
-        
+        b[1, 0] += top_left[0]
         b[1, 1] += top_left[1] 
-        b[1, 1] = min(b[1, 1], len(image) - 2)
 
         relative_boxes.append(b)
 
