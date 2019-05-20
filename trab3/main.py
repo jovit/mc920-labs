@@ -163,7 +163,7 @@ def separate_words(image, box):
     cropped = image[top_left[1]:bottom_right[1] +
                     1, top_left[0]:bottom_right[0] + 1]
 
-    selem_1x100 = np.ones((1, 10))
+    selem_1x100 = np.ones((5, 10))
     selem_200x1 = np.ones((10, 5))
 
 
@@ -190,24 +190,24 @@ def separate_words(image, box):
     cv2.imwrite("temp.pbm", invert(union).astype(int))
 
     f = open("./out2.txt", "w")
-    subprocess.call(["./comp_conexos", "temp.pbm", "temp.pbm"], stdout=f)
+    subprocess.call(["./comp_conexos", "temp.pbm", "temp2.pbm"], stdout=f)
     f.close()
     f = open("./out2.txt", "r")
-    out = f.read()
-    out = out.split("\n")
-    out = out[4:]
+    output = f.read()
+    output = output.split("\n")
+    output = output[4:]
     f.close()
 
-    bounding_boxes = []
-    for i in range(0, len(out) - 1, 2):
-        splited_1 = out[i].split(",")
-        splitted_2 = out[i+1].split(",")
-        bounding_boxes.append(
+    word_bounding_boxes = []
+    for i in range(0, len(output) - 1, 2):
+        splited_1 = output[i].split(",")
+        splitted_2 = output[i+1].split(",")
+        word_bounding_boxes.append(
             ((splited_1[0], splited_1[1]), (splitted_2[0], splitted_2[1])))
-    bounding_boxes = np.array(bounding_boxes).astype(int)
+    word_bounding_boxes = np.array(word_bounding_boxes).astype(int)
 
     relative_boxes = []
-    for b in bounding_boxes:
+    for b in word_bounding_boxes:
         b[0, 0] += top_left[0]
         b[0, 0] = min(b[0, 0], len(image[0]) - 2)
         
@@ -215,11 +215,11 @@ def separate_words(image, box):
         b[0, 1] = min(b[0, 1], len(image) - 2)
 
 
-        b[1, 0] += bottom_right[0] 
+        b[1, 0] += top_left[0] 
         b[1, 0] = min(b[1, 0], len(image[0]) - 2)
 
         
-        b[1, 1] += bottom_right[1] 
+        b[1, 1] += top_left[1] 
         b[1, 1] = min(b[1, 1], len(image) - 2)
 
         relative_boxes.append(b)
@@ -232,7 +232,7 @@ for box in text_boxes:
     for b in current:
         word_boxes.append(b)
 
-len(word_boxes)
+print("Number of words:", len(word_boxes))
 cv2.imwrite("bla.pbm", invert(image).astype(int))
 image_with_word_boxes = draw_boxes(invert(image).astype(int), word_boxes)
 cv2.imwrite("step10.pbm", image_with_word_boxes)

@@ -3,12 +3,12 @@ Image size (width x height): 384 x 37  pixels
 
 Number of connected components: 5
 42,0
-189,28
+189,32
+202,0
+263,32
 272,0
 341,36
 353,0
-383,27
-202,1
-263,28
-0,9
-34,28
+383,31
+0,5
+34,32
