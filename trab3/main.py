@@ -106,14 +106,13 @@ cv2.imwrite("step7_original.pbm", image_with_boxes)
 
 # %% Step 8 - Calculating metrics
 
-
 def relation_between_black_and_white(image, box):
     top_left = box[0]
     bottom_right = box[1]
     cropped = image[top_left[1]:bottom_right[1] +
                     1, top_left[0]:bottom_right[0] + 1]
     total = cropped.size
-    black_pixels = total - np.count_nonzero(cropped)
+    black_pixels = total - np.count_nonzero(cropped) # all pixels - number of pixels with value 1 (white)
 
     return black_pixels / total
 
