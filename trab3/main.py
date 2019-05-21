@@ -67,9 +67,10 @@ cv2.imwrite("step6.pbm", invert(closing_image).astype(int))
 
 def draw_boxes(image, bounding_boxes):
     image_with_boxes = np.copy(image)
-    for box in bounding_boxes:
+    for box in bounding_boxes: # draw each bounding box
         top_left = box[0]
         bottom_right = box[1]
+        # draw a box with 2 pixels of width
         image_with_boxes[top_left[1], top_left[0]:bottom_right[0] + 1] = 0
         image_with_boxes[top_left[1] + 1, top_left[0]:bottom_right[0] + 1] = 0
         image_with_boxes[bottom_right[1], top_left[0]:bottom_right[0] + 1] = 0
@@ -78,7 +79,8 @@ def draw_boxes(image, bounding_boxes):
         image_with_boxes[top_left[1]:bottom_right[1] + 1, top_left[0]] = 0
         image_with_boxes[top_left[1]:bottom_right[1] + 1, top_left[0] + 1] = 0
         image_with_boxes[top_left[1]:bottom_right[1] + 1, bottom_right[0]] = 0
-        image_with_boxes[top_left[1]                         :bottom_right[1] + 1, bottom_right[0]+1] = 0
+        image_with_boxes[top_left[1]
+            :bottom_right[1] + 1, bottom_right[0]+1] = 0
 
     return image_with_boxes
 
@@ -94,6 +96,7 @@ f.close()
 out = out.split("\n")
 out = out[4:]
 bounding_boxes = []
+# parsing the output of the c code
 for i in range(0, len(out) - 1, 2):
     splited_1 = out[i].split(",")
     splitted_2 = out[i+1].split(",")
@@ -106,13 +109,15 @@ cv2.imwrite("step7_original.pbm", image_with_boxes)
 
 # %% Step 8 - Calculating metrics
 
+
 def relation_between_black_and_white(image, box):
     top_left = box[0]
     bottom_right = box[1]
     cropped = image[top_left[1]:bottom_right[1] +
                     1, top_left[0]:bottom_right[0] + 1]
     total = cropped.size
-    black_pixels = total - np.count_nonzero(cropped) # all pixels - number of pixels with value 1 (white)
+    # all pixels - number of pixels with value 1 (white)
+    black_pixels = total - np.count_nonzero(cropped)
 
     return black_pixels / total
 
@@ -162,28 +167,15 @@ def separate_words(image, box):
     selem_1 = np.ones((6, 10))
     selem_2 = np.ones((10, 5))
 
-
     dilated1 = binary_dilation(cropped, selem_1)
     eroded1 = binary_dilation(dilated1, selem_1)
 
     dilated2 = binary_dilation(cropped, selem_2)
     eroded2 = binary_dilation(dilated2, selem_2)
 
-    union = eroded1 * eroded2
+    intersection = eroded1 * eroded2
 
-    # io.imshow(cropped.astype(int), cmap="gray")
-    # plt.show()
-
-    # io.imshow(eroded1.astype(int), cmap="gray")
-    # plt.show()
-
-    # io.imshow(eroded2.astype(int), cmap="gray")
-    # plt.show()
-
-    # io.imshow(union.astype(int), cmap="gray")
-    # plt.show()
-
-    cv2.imwrite("temp.pbm", invert(union).astype(int))
+    cv2.imwrite("temp.pbm", invert(intersection).astype(int))
 
     f = open("./out2.txt", "w")
     subprocess.call(["./comp_conexos", "temp.pbm", "temp.pbm"], stdout=f)
@@ -205,13 +197,14 @@ def separate_words(image, box):
     relative_boxes = []
     for b in word_bounding_boxes:
         b[0, 0] += top_left[0]
-        b[0, 1] += top_left[1] 
+        b[0, 1] += top_left[1]
         b[1, 0] += top_left[0]
-        b[1, 1] += top_left[1] 
+        b[1, 1] += top_left[1]
 
         relative_boxes.append(b)
 
     return relative_boxes
+
 
 word_boxes = []
 for box in text_boxes:
