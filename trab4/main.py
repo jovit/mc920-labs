@@ -9,142 +9,75 @@ except:
 
 import cv2
 import sys
-import math
+from skimage import io
 import numpy as np
+from matplotlib import pyplot as plt
 
-in_file = sys.argv[1]
-out_file = sys.argv[2]
+MIN_MATCH_COUNT = 4
 
-filename = os.path.join('./', in_file)
+in_file1 = sys.argv[1]
+in_file2 = sys.argv[2]
 
-image = cv2.imread(filename, 0)
-image = image.astype(float)
+distance_ratio = sys.argv[3]
+distance_ratio = float(distance_ratio)
 
-# The Laplacian of Gaussian
-ordered_dithering = np.array([
-    [6., 8., 4.],
-    [1., 0., 3.],
-    [5., 2., 7.]
-]).astype(float)
+filename1 = os.path.join('./', in_file1)
+filename2 = os.path.join('./', in_file2)
 
+image1_ = cv2.imread(filename1).astype(np.uint8)
+image1 = cv2.cvtColor(image1_, cv2.COLOR_BGR2GRAY).astype(np.uint8)
 
-bayer_ordered_dithering = np.array([
-    [0., 12., 3., 15.],
-    [8., 4., 11., 7.],
-    [2., 14., 1., 13.],
-    [10., 6., 9., 5.],
-]).astype(float)
-
-bayer_second_order = np.array([
-    [0., 2.],
-    [3., 1.]
-])
-
-def normalize_to_interval(gmin, gmax, image):
-    fmax = np.amax(image)
-    fmin = np.amin(image)
-    a = (gmax - gmin)/(fmax - fmin)
-    normalized = np.round((image - fmin) * a + gmin)
-
-    return normalized
-
-def apply_ordered_dithering(image, pattern):
-    pattern_size = len(pattern)
-    image_height = len(image)
-    image_width = len(image[0])
-
-    normalized = normalize_to_interval(0., 9., image)
-    result = np.zeros((image_height * pattern_size, image_width * pattern_size))
-
-    for i, line in enumerate(normalized):
-        for j, pixel in enumerate(line):
-            for y, l_pattern in enumerate(pattern):
-                for x, value_pattern in enumerate(l_pattern):
-                    if pixel > value_pattern:
-                        result[y + i * pattern_size, x + j * pattern_size] = 9
-                    else:
-                        result[y + i * pattern_size, x + j * pattern_size] = 0
-    return normalize_to_interval(0, 255, result)
-
-# left to right pattern
+image2_ = cv2.imread(filename2).astype(np.uint8)
+image2 = cv2.cvtColor(image2_, cv2.COLOR_BGR2GRAY).astype(np.uint8)
 
 
-def apply_dithering_with_error_diffusion(image):
-    image_height = len(image)
-    image_width = len(image[0])
-    image_copy = np.copy(image)
-    for i, line in enumerate(image_copy):
-        for j, pixel in enumerate(line):
-            error = 0
-            if pixel > 128:
-                error = pixel - 255
-                image_copy[i, j] = 255
-            else:
-                error = pixel
-                image_copy[i, j] = 0
-            if j + 1 < image_width - 1:
-                image_copy[i, j + 1] += 7./16. * error
-            if i + 1 < image_height - 1 and j - 1 > 0:
-                image_copy[i + 1, j - 1] += 3./16. * error
-            if i + 1 < image_height - 1:
-                image_copy[i + 1, j] += 5./16. * error
-            if i + 1 < image_height - 1 and j + 1 < image_width - 1:
-                image_copy[i + 1, j + 1] += 1./16. * error
-    return image_copy
+def get_sift_descriptors(img):
+    sift = cv2.xfeatures2d.SIFT_create()
+    kp, des = sift.detectAndCompute(img, None)
 
-# alternating pattern
-
-def apply_alternating_dithering_with_error_diffusion(image):
-    image_height = len(image)
-    image_width = len(image[0])
-    image_copy = np.copy(image)
-    for i, line in enumerate(image_copy):
-        order = enumerate(line)
-        going_right = True
-        if i % 2 != 0:
-            order = list(order)[::-1]
-            going_right = False
-
-        for j, pixel in order:
-            error = 0
-            if pixel > 128:
-                error = pixel - 255
-                image_copy[i, j] = 255
-            else:
-                error = pixel
-                image_copy[i, j] = 0
-            if j + 1 < image_width - 1 and going_right:
-                image_copy[i, j + 1] += 7./16. * error
-
-            if j - 1 > 0 and not going_right:
-                image_copy[i, j - 1] += 7./16. * error
-
-            if i + 1 < image_height - 1 and j - 1 > 0:
-                image_copy[i + 1, j - 1] += 3./16. * error
-            if i + 1 < image_height - 1:
-                image_copy[i + 1, j] += 5./16. * error
-            if i + 1 < image_height - 1 and j + 1 < image_width - 1:
-                image_copy[i + 1, j + 1] += 1./16. * error
-    return image_copy
+    return kp, des
 
 
-# %%
-dithered_image = apply_ordered_dithering(image, bayer_ordered_dithering)
-cv2.imwrite(out_file + "_bayer.pbm", dithered_image)
+def match_sift_descriptors(des1, des2):
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1, des2, k=2)
+    return matches
 
-# %%
-dithered_image = apply_ordered_dithering(image, ordered_dithering)
-cv2.imwrite(out_file + "_3x3.pbm", dithered_image)
 
-# %%
-dithered_image = apply_ordered_dithering(image, bayer_second_order)
-cv2.imwrite(out_file + "_2x2.pbm", dithered_image)
+def join_images_by_matches(img1_, img2_, kp1, kp2, des1, des2, matches):
+    # Apply ratio test
+    good = []
+    for m in matches:
+        if m[0].distance < distance_ratio*m[1].distance:
+            good.append(m)
+    matches = np.asarray(good)
 
-# %%
-error_diffusion = apply_dithering_with_error_diffusion(image)
-cv2.imwrite(out_file + "_floyd.pbm", error_diffusion)
+    image_with_matches = cv2.drawMatchesKnn(
+        img1_, kp1, img2_, kp2, matches, None)
+    cv2.imwrite('matches.jpg', image_with_matches)
+    if len(matches) > 0 and len(matches[:, 0]) >= MIN_MATCH_COUNT:
+        src = np.float32(
+            [kp1[m.queryIdx].pt for m in matches[:, 0]]).reshape(-1, 1, 2)
+        dst = np.float32(
+            [kp2[m.trainIdx].pt for m in matches[:, 0]]).reshape(-1, 1, 2)
+        H, masked = cv2.findHomography(src, dst, cv2.RANSAC, 5.0)
+        try:
+            dst = cv2.warpPerspective(
+                img1_, H, (img2_.shape[1] + img1_.shape[1], img2_.shape[0]))
 
-# %%
-alternating_error_diffusion = apply_alternating_dithering_with_error_diffusion(
-    image)
-cv2.imwrite(out_file + "_floyd_alternating.pbm", alternating_error_diffusion)
+            dst[0:img2_.shape[0], 0:img2_.shape[1]] = img2_
+            return image_with_matches, dst
+        except:
+            raise AssertionError("Can't find enough keypoints.")
+    else:
+        raise AssertionError("Can't find enough keypoints.")
+
+
+kp1, des1 = get_sift_descriptors(image1)
+kp2, des2 = get_sift_descriptors(image2)
+
+matches = match_sift_descriptors(des1, des2)
+
+image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
+cv2.imwrite('sift_result/matches.jpg', image_with_matches)
+cv2.imwrite('sift_result/joined.jpg', joined)
