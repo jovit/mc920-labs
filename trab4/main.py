@@ -34,33 +34,36 @@ image2 = cv2.cvtColor(image2_, cv2.COLOR_BGR2GRAY).astype(np.uint8)
 def get_sift_descriptors(img):
     sift = cv2.xfeatures2d.SIFT_create()
     kp, des = sift.detectAndCompute(img, None)
-
+    print('Number of sift descriptors:', len(des))
     return kp, des
 
 def get_orb_descriptors(img):
     orb = cv2.ORB_create()
     kp, des = orb.detectAndCompute(img, None)
-
+    print('Number of orb descriptors:', len(des))
     return kp,des
 
 def get_surf_descriptors(img):
     surf = cv2.xfeatures2d.SURF_create(400)
     kp, des = surf.detectAndCompute(img, None)
-
+    print('Number of surf descriptors:', len(des))
     return kp,des
 
 def get_brief_descriptors(img):
-    # Initiate STAR detector
-    star = cv2.xfeatures2d.StarDetector_create()
+    # Initiate sfit detector
+    sift = cv2.xfeatures2d.SIFT_create()
 
     # Initiate BRIEF extractor
     brief = cv2.xfeatures2d.BriefDescriptorExtractor_create()
 
-    # find the keypoints with STAR
-    kp = star.detect(img,None)
+    # find the keypoints with sift
+    kp = sift.detect(img,None)
 
     # compute the descriptors with BRIEF
     kp, des = brief.compute(img, kp)
+
+    print('Number of brief descriptors:', len(des))
+
     return kp, des
 
 def match_descriptors(des1, des2):
@@ -73,9 +76,10 @@ def join_images_by_matches(img1_, img2_, kp1, kp2, des1, des2, matches):
     # Apply ratio test
     good = []
     for m in matches:
-        if m[0].distance < distance_ratio*m[1].distance:
+        if m[0].distance < distance_ratio:
             good.append(m)
     matches = np.asarray(good)
+    print("Number of good matches", len(good))
 
     image_with_matches = cv2.drawMatchesKnn(
         img1_, kp1, img2_, kp2, matches, None)
@@ -99,42 +103,52 @@ def join_images_by_matches(img1_, img2_, kp1, kp2, des1, des2, matches):
 
 
 # %% Using sift descriptors
-kp1, des1 = get_sift_descriptors(image1)
-kp2, des2 = get_sift_descriptors(image2)
+try:
+    kp1, des1 = get_sift_descriptors(image1)
+    kp2, des2 = get_sift_descriptors(image2)
 
-matches = match_descriptors(des1, des2)
+    matches = match_descriptors(des1, des2)
 
-image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
-cv2.imwrite('sift_result/matches.jpg', image_with_matches)
-cv2.imwrite('sift_result/joined.jpg', joined)
+    image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
+    cv2.imwrite('sift_result/matches.jpg', image_with_matches)
+    cv2.imwrite('sift_result/joined.jpg', joined)
+except:
+    print("Failed to find enough descriptors for SIFT")
 
 # %% Using Orb descriptors
-kp1, des1 = get_orb_descriptors(image1)
-kp2, des2 = get_orb_descriptors(image2)
+try:
+    kp1, des1 = get_orb_descriptors(image1)
+    kp2, des2 = get_orb_descriptors(image2)
 
-matches = match_descriptors(des1, des2)
+    matches = match_descriptors(des1, des2)
 
-image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
-cv2.imwrite('orb_result/matches.jpg', image_with_matches)
-cv2.imwrite('orb_result/joined.jpg', joined)
-
+    image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
+    cv2.imwrite('orb_result/matches.jpg', image_with_matches)
+    cv2.imwrite('orb_result/joined.jpg', joined)
+except:
+    print("Failed to find enough descriptors for ORB")
 
 # %% Using Surf descriptors
-kp1, des1 = get_surf_descriptors(image1)
-kp2, des2 = get_surf_descriptors(image2)
+try:
+    kp1, des1 = get_surf_descriptors(image1)
+    kp2, des2 = get_surf_descriptors(image2)
 
-matches = match_descriptors(des1, des2)
+    matches = match_descriptors(des1, des2)
 
-image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
-cv2.imwrite('surf_result/matches.jpg', image_with_matches)
-cv2.imwrite('surf_result/joined.jpg', joined)
-
+    image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
+    cv2.imwrite('surf_result/matches.jpg', image_with_matches)
+    cv2.imwrite('surf_result/joined.jpg', joined)
+except:
+    print("Failed to find enough descriptors for SURF")
 # %% Using Brief descriptors
-kp1, des1 = get_brief_descriptors(image1)
-kp2, des2 = get_brief_descriptors(image2)
+try:
+    kp1, des1 = get_brief_descriptors(image1)
+    kp2, des2 = get_brief_descriptors(image2)
 
-matches = match_descriptors(des1, des2)
+    matches = match_descriptors(des1, des2)
 
-image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
-cv2.imwrite('brief_result/matches.jpg', image_with_matches)
-cv2.imwrite('brief_result/joined.jpg', joined)
+    image_with_matches, joined = join_images_by_matches(image1_, image2_, kp1, kp2, des1, des2, matches)
+    cv2.imwrite('brief_result/matches.jpg', image_with_matches)
+    cv2.imwrite('brief_result/joined.jpg', joined)
+except:
+    print("Failed to find enough descriptors for BRIEF")
