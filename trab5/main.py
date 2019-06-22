@@ -21,19 +21,6 @@ def cluster(image, n_clusters, n_init=10, max_iter=300):
     compressed = np.reshape(compressed, (image.shape))
     return compressed, k_colors.labels_, k_colors.cluster_centers_
 
-def plot_3d(image, show=True, save_fname=None, use_rgb_colors=True):
-    r = image[:, :, 0].flatten()
-    g = image[:, :, 1].flatten()
-    b = image[:, :, 2].flatten()
-
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(r, g, b, c=None if not use_rgb_colors
-               else image.reshape(-1, 3) / 255)
-
-    if save_fname: plt.savefig(save_fname, bbox_inches='tight')
-    if show: plt.show()
-
 def plot_clusters(image, labels, colors, show=True, save_fname=None):
     r = image[:, :, 0].flatten()
     g = image[:, :, 1].flatten()
@@ -87,9 +74,6 @@ print(f"Image saved to {fname}")
 # denormalizes values
 k_image *= 255
 cluster_centers = cluster_centers * 255
-
-plot_3d(image)
-plot_3d(k_image)
 
 plot_clusters(image, labels, colors=cluster_centers)
 
