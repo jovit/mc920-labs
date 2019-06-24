@@ -14,9 +14,9 @@ from mpl_toolkits.mplot3d import Axes3D
 def normalize(image):
     return (image / 255).reshape(-1, 3)
 
-def cluster(image, n_clusters, n_init=10, max_iter=300):
+def cluster(image, n_clusters):
     normalized = normalize(image)
-    k_colors = KMeans(n_clusters, n_init=n_init, max_iter=max_iter).fit(normalized)
+    k_colors = KMeans(n_clusters, random_state=0).fit(normalized)
     compressed = k_colors.cluster_centers_[k_colors.labels_]
     compressed = np.reshape(compressed, (image.shape))
     return compressed, k_colors.labels_, k_colors.cluster_centers_
@@ -61,15 +61,19 @@ try:
     n_clusters = int(argv[2]) if len(argv) > 2 else 128
     save_path = argv[3] if len(argv) > 3 else ""
 except:
-    print('\nusage: k_means.py image_fname [n_clusters] [save_path]')
+    print('\nusage: main.py [filename] [n clusters] [out path]')
     exit()
 
+start = time()
 image = cv2.cvtColor(cv2.imread(image_fname), cv2.COLOR_BGR2RGB)
 k_image, labels, cluster_centers = cluster(image, n_clusters)
+end = time()
+
+print("Time to cluster: ", end - start)
+
 
 fname = path.join(save_path, f"{image_name}{n_clusters}{image_ext}")
 img.imsave(fname, k_image)
-print(f"Image saved to {fname}")
 
 # denormalizes values
 k_image *= 255
